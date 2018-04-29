@@ -14,15 +14,16 @@ public class ExampleVolatile {
         ExampleVolatile exampleVolatile = new ExampleVolatile();
         ExecutorService executor = Executors.newFixedThreadPool(1000);
         CompletionService<Void> completionService = new ExecutorCompletionService(executor);
-        IntStream.range(0, 10000).forEach(v -> {
+        int loop = 10000;
+        IntStream.range(0, loop).forEach(v -> {
             completionService.submit(() -> {
                 exampleVolatile.inc();
-                Thread.sleep(v % 10);
+                Thread.sleep(v % 100);
                 return null;
             });
         });
 
-        IntStream.range(0, 10000).forEach(v -> {
+        IntStream.range(0, loop).forEach(v -> {
             try {
                 completionService.take().get();
             } catch (InterruptedException e) {
