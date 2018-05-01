@@ -9,24 +9,17 @@ public class ExapmpeABA {
     private static AtomicStampedReference atomicStampedRef = new AtomicStampedReference(100, 0);
 
     public static void main(String[] args) throws InterruptedException {
-        Thread intT1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                atomicInt.compareAndSet(100, 101);
-                atomicInt.compareAndSet(101, 100);
-            }
+        Thread intT1 = new Thread(() -> {
+            atomicInt.compareAndSet(100, 101);
+            atomicInt.compareAndSet(101, 100);
         });
 
-        Thread intT2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException e) {
-                }
-                boolean c3 = atomicInt.compareAndSet(100, 101);
-                System.out.println(c3); // true
+        Thread intT2 = new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
             }
+            System.out.println("AtomicInteger Result = " + atomicInt.compareAndSet(100, 101));
         });
 
         intT1.start();
@@ -34,29 +27,26 @@ public class ExapmpeABA {
         intT1.join();
         intT2.join();
 
-        Thread refT1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException e) {
-                }
-                atomicStampedRef.compareAndSet(100, 101, atomicStampedRef.getStamp(), atomicStampedRef.getStamp() + 1);
-                atomicStampedRef.compareAndSet(101, 100, atomicStampedRef.getStamp(), atomicStampedRef.getStamp() + 1);
+        Thread refT1 = new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
             }
+            atomicStampedRef.compareAndSet(100, 101, atomicStampedRef.getStamp(), atomicStampedRef.getStamp() + 1);
+            atomicStampedRef.compareAndSet(101, 100, atomicStampedRef.getStamp(), atomicStampedRef.getStamp() + 1);
         });
 
-        Thread refT2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int stamp = atomicStampedRef.getStamp();
-                try {
-                    TimeUnit.SECONDS.sleep(2);
-                } catch (InterruptedException e) {
-                }
-                boolean c3 = atomicStampedRef.compareAndSet(100, 101, stamp, stamp + 1);
-                System.out.println(c3); // false
+        Thread refT2 = new Thread(() -> {
+            int stamp = atomicStampedRef.getStamp();
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
             }
+            System.out.println("AtomicStampedReference Result = " +
+                    atomicStampedRef.compareAndSet(100, 101, stamp, stamp + 1));
+            stamp = atomicStampedRef.getStamp();
+            System.out.println("AtomicStampedReference Result = " +
+                    atomicStampedRef.compareAndSet(100, 101, stamp, stamp + 1));
         });
 
         refT1.start();
